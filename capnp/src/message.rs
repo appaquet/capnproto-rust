@@ -170,6 +170,10 @@ impl <S> Reader<S> where S: ReaderSegments {
         self.arena.into_segments()
     }
 
+    pub fn get_segments(&self) -> &S {
+        self.arena.get_segments()
+    }
+
     /// Checks whether the message is [canonical](https://capnproto.org/encoding.html#canonicalization).
     pub fn is_canonical(&self) -> Result<bool> {
         let (segment_start, seg_len) = self.arena.get_segment(0)?;

@@ -208,7 +208,7 @@ where R: Read {
 ///
 /// The segment table format for streams is defined in the Cap'n Proto
 /// [encoding spec](https://capnproto.org/encoding.html)
-fn read_segment_table<R>(read: &mut R,
+pub fn read_segment_table<R>(read: &mut R,
                          options: message::ReaderOptions)
                          -> Result<Option<SegmentLengthsBuilder>>
     where R: Read

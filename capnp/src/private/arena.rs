@@ -97,6 +97,10 @@ impl <S> ReaderArenaImpl <S> where S: ReaderSegments {
     pub fn into_segments(self) -> S {
         self.segments
     }
+
+    pub fn get_segments(&self) -> &S {
+        &self.segments
+    }
 }
 
 impl <S> ReaderArena for ReaderArenaImpl<S> where S: ReaderSegments {
