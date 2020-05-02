@@ -46,19 +46,20 @@ impl ReadLimiter {
 
     #[inline]
     pub fn can_read(&self, amount: u64) -> Result<()> {
-        let amount = amount as usize;
-
-        loop {
-            let current = self.limit.load(Ordering::Acquire);
-            if amount > current {
-                return Err(Error::failed(format!("read limit exceeded")));
-            } else {
-                let new_value = current - amount;
-                if self.limit.compare_and_swap(current, new_value, Ordering::Release) == current {
-                    break;
-                }
-            }
-        }
+        // let amount = amount as usize;
+        //
+        // loop {
+        //     let current = self.limit.load(Ordering::Acquire);
+        //     println!("{} {}", current, amount);
+        //     if amount > current {
+        //         return Err(Error::failed(format!("read limit exceeded")));
+        //     } else {
+        //         let new_value = current - amount;
+        //         if self.limit.compare_and_swap(current, new_value, Ordering::Release) == current {
+        //             break;
+        //         }
+        //     }
+        // }
 
         Ok(())
     }
