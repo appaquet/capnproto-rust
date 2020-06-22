@@ -22,6 +22,7 @@ use alloc::vec::Vec;
 use core::cell::{Cell, RefCell};
 use core::slice;
 use core::u64;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::private::units::*;
 use crate::message;
@@ -31,23 +32,35 @@ use crate::{Error, OutputSegments, Result};
 pub type SegmentId = u32;
 
 pub struct ReadLimiter {
-    pub limit: Cell<u64>,
+    pub limit: AtomicUsize,
 }
 
 impl ReadLimiter {
     pub fn new(limit: u64) -> ReadLimiter {
-        ReadLimiter { limit: Cell::new(limit) }
+        if (std::usize::MAX as u64) < limit {
+            panic!("ReadLimiter's limit needs to be smaller than usize")
+        }
+
+        ReadLimiter { limit: AtomicUsize::new(limit as usize) }
     }
 
     #[inline]
     pub fn can_read(&self, amount: u64) -> Result<()> {
-        let current = self.limit.get();
-        if amount > current {
-            Err(Error::failed(format!("read limit exceeded")))
-        } else {
-            self.limit.set(current - amount);
-            Ok(())
+        let amount = amount as usize;
+
+        loop {
+            let current = self.limit.load(Ordering::Acquire);
+            if amount > current {
+                return Err(Error::failed(format!("read limit exceeded")));
+            } else {
+                let new_value = current - amount;
+                if self.limit.compare_and_swap(current, new_value, Ordering::Release) == current {
+                    break;
+                }
+            }
         }
+
+        Ok(())
     }
 }
 
